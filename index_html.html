@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>스터디 장비 도감 & 대시보드</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Google Fonts Inter & Noto Sans KR -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans KR', 'sans-serif'],
+          },
+          colors: {
+            studio: {
+              950: '#0B0F19',
+              900: '#111827',
+              800: '#1F2937',
+              700: '#374151',
+              glow: '#3B82F6',
+              neonGreen: '#10B981',
+              neonOrange: '#F59E0B',
+              neonRed: '#EF4444'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { background-color: #0B0F19; color: #E5E7EB; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #111827; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #4B5563; }
+    .vu-dot { height: 4px; width: 8px; border-radius: 1px; display: inline-block; margin-right: 2px; }
+  </style>
+</head>
+
+<body class="font-sans antialiased min-h-screen pb-16">
+
+  <header class="border-b border-gray-800 bg-studio-900 sticky top-0 z-50 backdrop-blur-md bg-opacity-95">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-blue-600/20 text-blue-400 rounded-xl border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+          <i class="fa-solid fa-sliders text-2xl animate-pulse"></i>
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
+            AUDIO STUDY <span class="text-blue-500 text-sm font-bold bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20">GEAR DICTIONARY</span>
+          </h1>
+          <p class="text-xs text-gray-400 mt-0.5">우리 스터디 멤버 장비 정보 & 자산 대시보드</p>
+        </div>
+      </div>
+
+      <div class="hidden lg:flex items-center gap-1 bg-black/40 p-2 rounded-lg border border-gray-800">
+        <span class="text-[10px] text-gray-500 font-mono mr-2">MONITOR VU</span>
+        <span class="vu-dot bg-green-500"></span><span class="vu-dot bg-green-500"></span><span class="vu-dot bg-green-500"></span>
+        <span class="vu-dot bg-green-500"></span><span class="vu-dot bg-green-500"></span><span class="vu-dot bg-green-500"></span>
+        <span class="vu-dot bg-yellow-500"></span><span class="vu-dot bg-yellow-500"></span><span class="vu-dot bg-red-500"></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="bg-studio-900 p-5 rounded-2xl border border-gray-800 flex items-center justify-between hover:border-blue-500/30 transition-all duration-300">
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">등록 스터디원</span>
+          <h3 class="text-3xl font-black mt-1 text-white" id="stat-total-members">0명</h3>
+          <p class="text-xs text-blue-400 mt-1"><i class="fa-solid fa-users mr-1"></i>액티브 멤버 프로필</p>
+        </div>
+        <div class="p-3 bg-gray-800/50 rounded-xl text-gray-400">
+          <i class="fa-solid fa-user-group text-2xl text-blue-400"></i>
+        </div>
+      </div>
+
+      <div class="bg-studio-900 p-5 rounded-2xl border border-gray-800 flex items-center justify-between hover:border-blue-500/30 transition-all duration-300">
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">등록 장비 총합</span>
+          <h3 class="text-3xl font-black mt-1 text-white" id="stat-total-gear">0개</h3>
+          <p class="text-xs text-purple-400 mt-1"><i class="fa-solid fa-circle-check mr-1"></i>정밀 레퍼런스 모니터링</p>
+        </div>
+        <div class="p-3 bg-gray-800/50 rounded-xl text-gray-400">
+          <i class="fa-solid fa-guitar text-2xl text-purple-400"></i>
+        </div>
+      </div>
+
+      <div class="bg-studio-900 p-5 rounded-2xl border border-gray-800 flex items-center justify-between hover:border-blue-500/30 transition-all duration-300 relative overflow-hidden group">
+        <div class="absolute inset-y-0 right-0 w-1 bg-yellow-500"></div>
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">최다 선호 브랜드</span>
+          <h3 class="text-2xl font-black mt-1 text-yellow-500" id="stat-top-brand">로딩 중...</h3>
+          <p class="text-[10px] text-gray-400 mt-1" id="stat-top-brand-count">총 0개 기기 등록됨</p>
+        </div>
+        <div class="p-3 bg-yellow-500/10 rounded-xl text-yellow-500">
+          <i class="fa-solid fa-crown text-2xl"></i>
+        </div>
+      </div>
+
+      <div class="bg-studio-900 p-5 rounded-2xl border border-gray-800 flex items-center justify-between hover:border-blue-500/30 transition-all duration-300">
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">추정 장비 총자산 (참고)</span>
+          <h3 class="text-2xl font-black mt-1 text-emerald-400" id="stat-total-value">₩0</h3>
+          <p class="text-[10px] text-gray-500 mt-1 font-sans">실거래 중고가 및 정품 시가 혼합 산정</p>
+        </div>
+        <div class="p-3 bg-emerald-500/10 rounded-xl text-emerald-400">
+          <i class="fa-solid fa-won-sign text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="bg-studio-900 p-6 rounded-2xl border border-gray-800 mb-8">
+      <div class="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
+
+        <div class="flex p-1 bg-studio-950 rounded-xl border border-gray-800 self-start overflow-x-auto max-w-full">
+          <button onclick="switchTab('table')" id="tab-table" class="px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 bg-blue-600 text-white shadow-lg shadow-blue-500/20 whitespace-nowrap">
+            <i class="fa-solid fa-table mr-1.5"></i>엑셀형 테이블 뷰
+          </button>
+          <button onclick="switchTab('member')" id="tab-member" class="px-5 py-2.5 rounded-lg text-sm font-bold text-gray-400 hover:text-white transition-all duration-200 whitespace-nowrap">
+            <i class="fa-solid fa-users mr-1.5"></i>멤버별 장비 카드
+          </button>
+          <button onclick="switchTab('category')" id="tab-category" class="px-5 py-2.5 rounded-lg text-sm font-bold text-gray-400 hover:text-white transition-all duration-200 whitespace-nowrap">
+            <i class="fa-solid fa-layer-group mr-1.5"></i>장비 유형별 보기
+          </button>
+          <button onclick="switchTab('stats')" id="tab-stats" class="px-5 py-2.5 rounded-lg text-sm font-bold text-gray-400 hover:text-white transition-all duration-200 whitespace-nowrap">
+            <i class="fa-solid fa-chart-simple mr-1.5"></i>브랜드 분포 & 통계
+          </button>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-2 flex-1 max-w-xl justify-end">
+          <div class="relative w-full">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </span>
+            <input type="text" id="search-input" oninput="handleSearch()" placeholder="멤버, 오인페, 스피커, 헤드폰 브랜드 검색..." class="w-full pl-10 pr-4 py-2.5 bg-studio-950 rounded-xl border border-gray-800 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors">
+          </div>
+          <button onclick="resetFilters()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-sm font-semibold rounded-xl text-gray-300 transition-colors whitespace-nowrap">
+            <i class="fa-solid fa-rotate-right mr-1.5"></i>초기화
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-gray-800/60" id="brand-filters-container">
+        <span class="text-xs font-semibold text-gray-500 mr-2">인기 브랜드 퀵클릭:</span>
+      </div>
+    </div>
+
+    <!-- Views -->
+    <div id="view-table" class="bg-studio-900 border border-gray-800 rounded-2xl mb-8 overflow-hidden">
+      <div class="p-4 bg-studio-950 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-xs font-bold text-gray-300 uppercase tracking-wider">엑셀식 빠른 장비 목록</span>
+        </div>
+        <button onclick="openTableCopyModal()" class="px-4 py-2 bg-emerald-600/20 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/30 hover:border-emerald-500 rounded-xl text-xs font-bold transition-all duration-200 shadow-md flex items-center gap-1.5">
+          <i class="fa-regular fa-copy"></i> 표 전체 선택 복사하기
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-gray-800 bg-studio-950/50 text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <th class="p-4 text-center whitespace-nowrap w-[150px]">사용자 이름</th>
+              <th class="p-4 whitespace-nowrap w-[100px]">장비 구분</th>
+              <th class="p-4 whitespace-nowrap w-[150px]">브랜드</th>
+              <th class="p-4 whitespace-nowrap">모델명 (장비명)</th>
+              <th class="p-4 text-right whitespace-nowrap w-[150px]">2026 기준 시가</th>
+              <th class="p-4 text-center whitespace-nowrap w-[100px]">상세정보</th>
+            </tr>
+          </thead>
+          <tbody id="table-body" class="divide-y divide-gray-800 text-sm text-gray-300"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="view-member" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    <div id="view-category" class="hidden space-y-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-studio-900 rounded-2xl border border-gray-800 p-6">
+          <h3 class="text-lg font-black text-white border-b border-gray-800 pb-3 flex items-center justify-between">
+            <span class="flex items-center gap-2"><i class="fa-solid fa-circle-nodes text-blue-500"></i>오디오 인터페이스</span>
+            <span class="text-xs bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-full border border-blue-500/20" id="count-interface">0개</span>
+          </h3>
+          <div class="mt-4 space-y-3 max-h-[500px] overflow-y-auto pr-2" id="list-interfaces"></div>
+        </div>
+
+        <div class="bg-studio-900 rounded-2xl border border-gray-800 p-6">
+          <h3 class="text-lg font-black text-white border-b border-gray-800 pb-3 flex items-center justify-between">
+            <span class="flex items-center gap-2"><i class="fa-solid fa-volume-high text-yellow-500"></i>모니터 스피커</span>
+            <span class="text-xs bg-yellow-500/10 text-yellow-400 px-2.5 py-1 rounded-full border border-yellow-500/20" id="count-speakers">0개</span>
+          </h3>
+          <div class="mt-4 space-y-3 max-h-[500px] overflow-y-auto pr-2" id="list-speakers"></div>
+        </div>
+
+        <div class="bg-studio-900 rounded-2xl border border-gray-800 p-6">
+          <h3 class="text-lg font-black text-white border-b border-gray-800 pb-3 flex items-center justify-between">
+            <span class="flex items-center gap-2"><i class="fa-solid fa-headphones text-purple-500"></i>헤드폰 / 이어폰</span>
+            <span class="text-xs bg-purple-500/10 text-purple-400 px-2.5 py-1 rounded-full border border-purple-500/20" id="count-headphones">0개</span>
+          </h3>
+          <div class="mt-4 space-y-3 max-h-[500px] overflow-y-auto pr-2" id="list-headphones"></div>
+        </div>
+
+        <div class="bg-studio-900 rounded-2xl border border-gray-800 p-6">
+          <h3 class="text-lg font-black text-white border-b border-gray-800 pb-3 flex items-center justify-between">
+            <span class="flex items-center gap-2"><i class="fa-solid fa-diagram-project text-emerald-500"></i>컨버터 / 기타</span>
+            <span class="text-xs bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-500/20" id="count-converters">0개</span>
+          </h3>
+          <div class="mt-4 space-y-3 max-h-[500px] overflow-y-auto pr-2" id="list-converters"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-stats" class="hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="bg-studio-900 p-6 rounded-2xl border border-gray-800 flex flex-col items-center">
+          <h4 class="text-sm font-bold text-gray-300 mb-4 text-center w-full flex items-center justify-center gap-2">
+            <i class="fa-solid fa-chart-pie text-blue-500"></i>오인페 브랜드 비율
+          </h4>
+          <div class="w-full max-w-[280px] h-[280px] relative"><canvas id="interfaceBrandChart"></canvas></div>
+        </div>
+
+        <div class="bg-studio-900 p-6 rounded-2xl border border-gray-800 flex flex-col items-center">
+          <h4 class="text-sm font-bold text-gray-300 mb-4 text-center w-full flex items-center justify-center gap-2">
+            <i class="fa-solid fa-chart-pie text-yellow-500"></i>스피커 브랜드 비율
+          </h4>
+          <div class="w-full max-w-[280px] h-[280px] relative"><canvas id="speakerBrandChart"></canvas></div>
+        </div>
+
+        <div class="bg-studio-900 p-6 rounded-2xl border border-gray-800 flex flex-col items-center">
+          <h4 class="text-sm font-bold text-gray-300 mb-4 text-center w-full flex items-center justify-center gap-2">
+            <i class="fa-solid fa-chart-pie text-purple-500"></i>헤드폰 브랜드 비율
+          </h4>
+          <div class="w-full max-w-[280px] h-[280px] relative"><canvas id="headphoneBrandChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modals / Toast (원본 유지) -->
+  <div id="info-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden px-4">
+    <div class="bg-studio-900 border border-gray-800 max-w-md w-full rounded-2xl p-6 relative">
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <div id="copy-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden px-4">
+    <div class="bg-studio-900 border border-gray-800 max-w-md w-full rounded-2xl p-6 relative">
+      <button onclick="closeCopyModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-2.5 mb-2">
+        <div class="p-2 bg-blue-500/10 rounded-lg text-blue-400">
+          <i class="fa-regular fa-copy text-lg"></i>
+        </div>
+        <h3 class="text-lg font-black text-white" id="copy-modal-title">장비 정보 선택 복사</h3>
+      </div>
+      <p class="text-xs text-gray-400 mb-4" id="copy-modal-desc">원하는 항목만 체크하면 아래에 실시간 미리보기가 구성됩니다.</p>
+
+      <div class="space-y-2.5 bg-studio-950 p-4 rounded-xl border border-gray-800 mb-4 font-sans">
+        <label class="flex items-center gap-3 cursor-pointer select-none">
+          <input type="checkbox" id="copy-opt-name" checked onchange="updateCopyPreview()" class="w-4 h-4 rounded border-gray-800 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 bg-studio-900">
+          <span class="text-sm font-semibold text-gray-300">사람 이름 포함</span>
+        </label>
+        <label class="flex items-center gap-3 cursor-pointer select-none">
+          <input type="checkbox" id="copy-opt-gear" checked onchange="updateCopyPreview()" class="w-4 h-4 rounded border-gray-800 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 bg-studio-900">
+          <span class="text-sm font-semibold text-gray-300">장비 종류 및 브랜드/모델명 포함</span>
+        </label>
+        <label class="flex items-center gap-3 cursor-pointer select-none">
+          <input type="checkbox" id="copy-opt-price" checked onchange="updateCopyPreview()" class="w-4 h-4 rounded border-gray-800 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 bg-studio-900">
+          <span class="text-sm font-semibold text-gray-300">장비 가격 포함</span>
+        </label>
+      </div>
+
+      <div class="mb-5">
+        <span class="text-xs font-bold text-gray-500 uppercase block mb-1">복사 내용 미리보기</span>
+        <pre id="copy-preview" class="p-3 bg-black/40 rounded-xl border border-gray-800 text-xs font-mono text-gray-300 max-h-40 overflow-y-auto whitespace-pre-wrap break-all leading-relaxed"></pre>
+      </div>
+
+      <button onclick="executeCopy()" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-sm font-bold text-white rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2">
+        <i class="fa-solid fa-check"></i> 클립보드에 복사하기
+      </button>
+
+      <div id="copy-toast" class="hidden mt-3 text-center text-xs text-emerald-400 font-semibold">
+        <i class="fa-solid fa-circle-check mr-1"></i> 클립보드 복사 완료!
+      </div>
+    </div>
+  </div>
+
+  <div id="global-toast" class="fixed bottom-6 right-6 z-[9999] bg-studio-900 border border-emerald-500/40 text-white px-5 py-3.5 rounded-2xl shadow-2xl transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none flex items-center gap-2.5">
+    <div class="p-1 bg-emerald-500/10 text-emerald-400 rounded-lg">
+      <i class="fa-solid fa-circle-check text-lg"></i>
+    </div>
+    <div><p id="global-toast-msg" class="text-xs font-semibold text-gray-200"></p></div>
+  </div>
+
+  <script>
+    // ===== 게시용 설정 =====
+    // 미리보기(Preview) 환경 및 단일 파일 배포를 위해 데이터를 직접 내장합니다.
+    let gearDatabase = [
+      {
+        "name": "조샛별",
+        "gear": [
+          { "category": "오인페", "brand": "Universal Audio", "model": "Apollo Twin X DUO Heritage Edition", "price": 1590000, "desc": "유니슨 마이크 프리 및 독자 개발 UAD-2 가상 플러그인 탑재 오디오 인터페이스의 베스트셀러" },
+          { "category": "스피커", "brand": "Yamaha", "model": "HS5 (1조)", "price": 450000, "desc": "국내 스튜디오 모니터링 입문 1위에 빛나는 보컬 및 미드 대역 고명료 스피커" },
+          { "category": "헤드폰", "brand": "Sennheiser", "model": "HD650", "price": 550000, "desc": "세계 최고의 신뢰도를 제공하는 레퍼런스 급 오픈형 모니터링 헤드폰" },
+          { "category": "헤드폰", "brand": "Sennheiser", "model": "HD630VB (단종 시세)", "price": 250000, "desc": "가변 베이스 다이얼이 채용된 고해상도 하이파이 밀폐형 헤드폰 (단종 시세 적용)" }
+        ]
+      },
+      {
+        "name": "조영호",
+        "gear": [
+          { "category": "오인페", "brand": "Solid State Logic (SSL)", "model": "SSL 18 (플래그십 랙형)", "price": 1899000, "desc": "SSL에서 새롭게 론칭한 차세대 32비트 컨버터 탑재 대형 랙형 오디오 인터페이스" },
+          { "category": "스피커", "brand": "HEDD", "model": "Type 05 MK2 (1조)", "price": 3180000, "desc": "독일제 명품 AMT 트위터와 선형 주파수 동적 필터 DSP가 융합된 하이엔드 모니터 스피커" },
+          { "category": "헤드폰", "brand": "Sennheiser", "model": "HD560S", "price": 240000, "desc": "매우 우수한 가성비와 탁월한 사운드 스테이지 정위감을 지닌 오픈형 모니터" }
+        ]
+      },
+      {
+        "name": "차현수",
+        "gear": [
+          { "category": "오인페", "brand": "MOTU", "model": "UltraLite mk5", "price": 980000, "desc": "ESS Sabre DAC 칩셋 장착, 가혹한 프로 무대에서도 최고의 안정성과 무색무취 해상력 선사" },
+          { "category": "스피커", "brand": "Neumann", "model": "KH 80 DSP (1조)", "price": 1760000, "desc": "초소형 4인치 모니터의 절대강자. 정교한 자체 DSP 공간 교정 MA1 프로세스 연동 가능" },
+          { "category": "헤드폰", "brand": "HEDD", "model": "HEDDphone ONE (단종 시세)", "price": 850000, "desc": "에어 모션 트랜스포머(AMT) 기술을 전 대역에 적용한 고해상도 평판형 명기 헤드폰 (단종 후 중고 감가 적용)" }
+        ]
+      },
+      {
+        "name": "재용",
+        "gear": [
+          { "category": "오인페", "brand": "Focusrite", "model": "Scarlett Solo Gen 4", "price": 180000, "desc": "전 세계 오디오 입문자들이 가장 신뢰하는, 깔끔하고 왜곡률 낮은 소형 오인페" },
+          { "category": "헤드폰", "brand": "Audio-Technica", "model": "ATH-M50x", "price": 210000, "desc": "글로벌 상업 스튜디오 모니용 영원한 베스트셀러이자 명료한 저역 표준 밀폐폰" }
+        ]
+      },
+      {
+        "name": "장기훈",
+        "gear": [
+          { "category": "오인페", "brand": "Universal Audio", "model": "Apollo Solo", "price": 750000, "desc": "UAD 가상 플러그인의 정밀 프로세싱 연산을 버스 파워 구동으로 간편하게 조작" },
+          { "category": "스피커", "brand": "Kali Audio", "model": "LP-UNF (1조)", "price": 490000, "desc": "데스크 바운더리 최적화 EQ 딥스위치 탑재로 좁은 방구석 모니터링을 효율적으로 캘리브레이션" },
+          { "category": "헤드폰", "brand": "Apple", "model": "EarPods (3.5mm)", "price": 35000, "desc": "대다수 무선/모바일 리스너의 평준화된 소리를 체킹하기 위한 절대적 최종 환경 지름길" }
+        ]
+      },
+      {
+        "name": "임남훈",
+        "gear": [
+          { "category": "오인페", "brand": "MOTU", "model": "828es (단종 시세)", "price": 950000, "desc": "탁월한 라우팅 제어 능력 및 다채널 입출력을 탑재한 레전더리 멀티 인터페이스 (단종 시세 반영)" },
+          { "category": "스피커", "brand": "Focal", "model": "Shape Twin (1조)", "price": 3180000, "desc": "프랑스 포칼의 특허 플랙스 콘 파이버 콘지 및 패시브 라디에이터 기반 왜곡 없는 저역 재현" },
+          { "category": "헤드폰", "brand": "Beyerdynamic", "model": "DT770 Pro", "price": 220000, "desc": "영원히 고장 나지 않는 스튜디오 레코딩용 밀폐형 독일 장인 조립 헤드폰" }
+        ]
+      },
+      {
+        "name": "최희영",
+        "gear": [
+          { "category": "오인페", "brand": "Steinberg", "model": "UR44 (단종 시세)", "price": 180000, "desc": "야마하 D-PRE 마이크 프리 내장, 튼튼한 금속 바디 구조의 다용도 오인페 (단종 시세 적용)" },
+          { "category": "스피커", "brand": "MIDIplus", "model": "Classic Monitor (1조)", "price": 180000, "desc": "단단하고 풍부한 저역대를 타이트하게 밀어주며 믹싱 작업 기반을 제공하는 엔트리 모니터" },
+          { "category": "헤드폰", "brand": "Beyerdynamic", "model": "DT990 Pro", "price": 220000, "desc": "공간 표현력이 무척 넓어 고음역대의 미세한 위상 및 치찰음 제어에 탁월한 오픈형 믹싱 헤드폰" }
+        ]
+      },
+      {
+        "name": "hera.sung",
+        "gear": [
+          { "category": "오인페", "brand": "Universal Audio", "model": "Apollo x6 Heritage Edition", "price": 2900000, "desc": "상업 작곡용 엘리트 오디오 랙형 오인페. 6코어 하이엔드 DSP 하드웨어 연동 설계" },
+          { "category": "스피커", "brand": "Neumann", "model": "KH 120 II (1조)", "price": 3000000, "desc": "구형 KH120A 단종 후 최신 DSP를 품은 KH120 II 기준가 적용, 칼같이 명료한 지향성" },
+          { "category": "헤드폰", "brand": "Sennheiser", "model": "HD600", "price": 490000, "desc": "설명이 필요 없는 플랫 모니터링의 신성한 표본이자 교과서급 바이블" }
+        ]
+      },
+      {
+        "name": "세은",
+        "gear": [
+          { "category": "오인페", "brand": "RME", "model": "Fireface UFX II", "price": 3450000, "desc": "RME만의 극한의 레이턴시 보정과 토탈믹스(TotalMix) 라우팅을 지원하는 마스터피스 기어" },
+          { "category": "스피커", "brand": "Genelec", "model": "8330A SAM (1조)", "price": 2972000, "desc": "공간 음향 교정 모니터링 표준. GLM 교정 마이크 키트 연동으로 평탄한 주파수 복원" },
+          { "category": "헤드폰", "brand": "Beyerdynamic", "model": "DT770 Pro", "price": 220000, "desc": "견고한 차음 능력과 고역 캡처가 뛰어나 보컬 녹음 현장에서 필수적으로 비치되는 모델" }
+        ]
+      },
+      {
+        "name": "양도겸",
+        "gear": [
+          { "category": "오인페", "brand": "Steinberg", "model": "UR22C", "price": 220000, "desc": "합리적인 예산으로 USB-C 전력 공급 및 고속 레코딩 드라이버를 구현하는 대중적 입문기" },
+          { "category": "스피커", "brand": "MIDIplus", "model": "MI3 (1조)", "price": 160000, "desc": "초소형 3인치 드라이버 유닛을 채용하여 가볍게 공간 한구석에 두고 서브 모니터링용 배치" },
+          { "category": "헤드폰", "brand": "Sony", "model": "MDR-7506", price: 150000, "desc": "한국 방송계 및 영상 편집 현장에서 수십 년째 애용해 온 절대적 고장 제로 명기" }
+        ]
+      },
+      {
+        "name": "이경민",
+        "gear": [
+          { "category": "오인페", "brand": "RME", "model": "Fireface UFX II + ADI-2 PRO FS", "price": 6730000, "desc": "최정상급 DA 사운드 변환 컨버팅(ADI-2 Pro)과 UFX II 시스템을 결합한 꿈의 믹스마스터 결합 솔루션" },
+          { "category": "스피커", "brand": "IK Multimedia", "model": "iLoud MTM MKII (1조)", "price": 990000, "desc": "동급 체급 대비 기적적인 위상 밸런스와 저음 확장 능력을 원터치 마이크 보정으로 완벽히 통제" },
+          { "category": "헤드폰", "brand": "HEDD", "model": "HEDDphone TWO PRO", "price": 3980000, "desc": "초광대역 극강 하이엔드 정밀 AMT 소자가 내장된 마스터링 전용 유선 헤드폰" }
+        ]
+      },
+      {
+        "name": "이장현",
+        "gear": [
+          { "category": "오인페", "brand": "Black Lion Audio", "model": "Revolution 2x2", "price": 550000, "desc": "시그널 모디파이(개조) 명가 블랙라이언에서 독보적인 파워 필터 기술을 투입한 아날로그 톤 오인페" },
+          { "category": "스피커", "brand": "Mackie", "model": "HR824 MK1 (단종 시세)", "price": 550000, "desc": "90년대 미국 레코딩 스튜디오를 지배했던 초저역 서브우퍼 반응 레전더리 8인치 1조 (중고가 시세)" },
+          { "category": "헤드폰", "brand": "Neumann", "model": "NDH 30", "price": 1250000, "desc": "노이만 플래그십 스피커인 KH 시리즈의 공간감을 그대로 헤드셋으로 완벽 재사한 초정밀 오픈형" },
+          { "category": "헤드폰", "brand": "Audio-Technica", "model": "ATH-M50x", "price": 210000, "desc": "단단하고 펀치감 넘치는 모니터링 주파수를 지녀 작곡가들이 기본 체크용으로 지니는 기기" }
+        ]
+      },
+      {
+        "name": "윤하얀",
+        "gear": [
+          { "category": "오인페", "brand": "SPL", "model": "Crimson (단종 시세)", "price": 350000, "desc": "독일제 고성능 마이크 프리를 내장한 독창적 설계의 올인원 라우팅 컨트롤 오인페" },
+          { "category": "오인페", "brand": "Tascam", "model": "UH-7000 (단종 시세)", "price": 250000, "desc": "극도로 평탄하고 선명한 사운드로 유명한 레전더리 하이엔드 마이크 프리 겸 AD/DA" },
+          { "category": "스피커", "brand": "Genelec", "model": "8330A SAM (1조)", "price": 2972000, "desc": "제네렉 스마트 액티브 모니터 시스템. 왜곡 없는 완벽한 위상과 선형 주파수로 공간 음향 통제" },
+          { "category": "헤드폰", "brand": "Shure", "model": "SRH440", "price": 120000, "desc": "가장 저렴한 가격대 중 음악 작업하기 최상의 플랫도를 보여 주는 전설의 대중적 레퍼런스 밀폐" }
+        ]
+      },
+      {
+        "name": "조승진",
+        "gear": [
+          { "category": "오인페", "brand": "Universal Audio", "model": "Apollo Twin X", "price": 1590000, "desc": "아날로그 하드웨어 콘솔의 핵심 배선 설계를 소프트웨어와 유니슨 프리로 구현한 고급 트윈" },
+          { "category": "스피커", "brand": "Adam Audio", "model": "A5X (단종 시세)", "price": 750000, "desc": "리본 트위터 특유의 찰랑거리며 맑은 초고역 표현력으로 한 시대를 풍미한 베스트셀러 1조 (중고 시세)" },
+          { "category": "헤드폰", "brand": "Sennheiser", "model": "HD600", "price": 490000, "desc": "완벽히 신뢰할 수 있는 플랫함으로, 보컬 대역 톤 교정에 글로벌 음향 엔지니어들의 1선 선택" }
+        ]
+      },
+      {
+        "name": "정효경",
+        "gear": [
+          { "category": "오인페", "brand": "Focusrite", "model": "Scarlett 18i8 (3세대)", "price": 520000, "desc": "다수의 외장 아날로그 악기나 멀티 마이킹 연결에 적합한 탄탄하고 신뢰도 높은 멀티 인풋 오인페" },
+          { "category": "헤드폰", "brand": "AKG", "model": "K271 MK2", "price": 170000, "desc": "장시간 믹스 작업을 해도 목에 무리가 가지 않는 초경량 설계 및 고음역 모니터 전용" }
+        ]
+      },
+      {
+        "name": "이용",
+        "gear": [
+          { "category": "오인페", "brand": "Solid State Logic (SSL)", "model": "SSL 2+ MKII (2세대 최신형)", "price": 569000, "desc": "업그레이드된 32비트 고출력 컨버터와 정위상 헤드폰 드라이버를 지닌 최신 세대 SSL 기어" },
+          { "category": "스피커", "brand": "Yamaha", "model": "NS-10MM (단종 시세)", "price": 150000, "desc": "전설적인 화이트 콘 스피커 NS-10M 모델의 소형 축소판. 보컬 대역의 엄격한 모니터 (중고 시세)" },
+          { "category": "헤드폰", "brand": "Rode", "model": "NTH-100", price: 220000, "desc": "쿨링 젤이 함유된 인체공학 메모리폼 패드와 매우 차분하게 정돈된 고품격 플랫 모니터" }
+        ]
+      },
+      {
+        "name": "홍석준",
+        "gear": [
+          { "category": "스피커", "brand": "PreSonus", "model": "Eris 3.5 BT (1조)", "price": 160000, "desc": "가성비 모니터 시장의 대부 프리소너스의 스테디셀러이자 블루투스 연동 기능 모델" },
+          { "category": "헤드폰", "brand": "Sony", "model": "WH-1000XM4", "price": 380000, "desc": "가장 대중적인 무선 액티브 노이즈 캔슬링 및 소비자 중심의 다이내믹 저역 위상 체킹용 리스너 기기" },
+          { "category": "헤드폰", "brand": "Sennheiser", "model": "Momentum True Wireless 4", "price": 370000, "desc": "최고의 고해상도 코덱 사운드를 지원해 대중의 플랫한 무선 소비 트렌드를 체크하기 위한 수단" }
+        ]
+      },
+      {
+        "name": "양재성",
+        "gear": [
+          { "category": "오인페", "brand": "Universal Audio", "model": "Apollo x4 Heritage Edition", "price": 2700000, "desc": "데스크탑 급 중 가장 여유로운 4채널 마이크 프리 및 고해상도 컨버터가 내장된 프로 기어" },
+          { "category": "스피커", "brand": "PMC", "model": "PMC 6 (1조)", "price": 10400000, "desc": "영국 PMC사 하이엔드 동축 스피커의 완결판. 초광대역 주파수 리니어 위상 구현" },
+          { "category": "컨버터", "brand": "RME", "model": "ADI-2 Pro FS R Black Edition", "price": 3280000, "desc": "초정밀 워드 클럭 지터 억제 능력을 갖춘 RME사의 최고급 플래그십 마스터 컨버터 헤드폰 앰프" },
+          { "category": "헤드폰", "brand": "Sennheiser", "model": "HD600", "price": 490000, "desc": "믹스 톤 검증 시 어떠한 착색도 없이 진실된 원음을 투과해 주는 엔지니어 교과서" },
+          { "category": "헤드폰", "brand": "Beyerdynamic", "model": "DT880 Pro", "price": 260000, "desc": "세미 오픈 타입 구조를 지녀 자연스럽고 예리하게 갈라진 악기 주파수 레이어 모니터링" },
+          { "category": "헤드폰", "brand": "Focal", "model": "Radiance Bentley Edition (한정단종 소장가)", "price": 1200000, "desc": "벤틀리 콜라보 럭셔리 밀폐형. 전 가청역대를 우아한 포칼 드라이버 시그니처 배선으로 청취 (감가 적용)" }
+        ]
+      },
+      {
+        "name": "정우진",
+        "gear": [
+          { "category": "오인페", "brand": "RME", "model": "Babyface Pro FS", "price": 1390000, "desc": "독일 장인들이 정밀 가공한 알루미늄 블록 프레임 속 탑클래스 저지터 정상 클럭 탑재" },
+          { "category": "스피커", "brand": "Yamaha", "model": "MSP5 Studio (단종 시세)", "price": 330000, "desc": "동체급 중 압도적으로 단단한 유닛 인클로저 설계. 튀어나올 듯이 예리한 보컬 중심 모니터 (중고 시세)" },
+          { "category": "헤드폰", "brand": "Shure", "model": "SRH840", "price": 180000, "desc": "국내 프로 대형 작곡가들에게 가장 강력한 지지를 받아온 웅장하고 풍부한 중고역 가청폰" }
+        ]
+      },
+      {
+        "name": "정주혁",
+        "gear": [
+          { "category": "오인페", "brand": "RME", "model": "Babyface Pro (단종 시세)", "price": 700000, "desc": "FS 이전 레전더리 베이비페이스 오리지널 버전. RME 고장 불량 제로의 전설적 전설의 드라이버 안정성 (중고 시세)" },
+          { "category": "컨버터", "brand": "RME", "model": "ADI-2 FS (AD/DA)", "price": 1290000, "desc": "신호 감쇠 없는 투명하고 정확도 높은 2채널 프로페셔널 아날로그 컨버팅 전선" },
+          { "category": "스피커", "brand": "Genelec", "model": "8030C (1조)", "price": 2100000, "desc": "글로벌 홈 믹싱 룸 5인치 시장 정복자. 알루미늄 성형 바디로 극한의 저역 왜율 방지" },
+          { "category": "헤드폰", "brand": "Sennheiser", "model": "HD650", "price": 550000, "desc": "HD600보다 살짝 깊이 있고 포근하고 중엄한 리스닝 정돈 밸런스로 공간 배치 추적 용이" },
+          { "category": "헤드폰", "brand": "Audio-Technica", "model": "ATH-M50x", "price": 210000, "desc": "스튜디오 드럼 및 댄스, 힙합 비트메이킹 시 완벽하고 단단한 저역 모니터의 표준" }
+        ]
+      }
+    ];
+
+    // ===== 상태 =====
+    let currentTab = 'table';
+    let searchQuery = '';
+    let selectedBrandFilter = null;
+    let chartInstances = {};
+    let activeCopyMember = null;
+    let copyScope = 'all';
+
+    // ===== 유틸 =====
+    function formatKRW(val) {
+      return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(val).replace('KRW', '₩').trim();
+    }
+
+    function showToastMessage(msg) {
+      const toast = document.getElementById('global-toast');
+      const toastMsg = document.getElementById('global-toast-msg');
+      toastMsg.innerText = msg;
+      toast.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+      }, 3500);
+    }
+
+    async function loadGearData() {
+      try {
+        const res = await fetch(DATA_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error(`Data fetch failed: ${res.status}`);
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error("Invalid data format");
+        gearDatabase = data;
+      } catch (e) {
+        console.error(e);
+        gearDatabase = [];
+        showToastMessage("데이터를 불러오지 못했습니다. gear-data.json을 확인해 주세요.");
+      }
+    }
+
+    function getCategoryBadge(cat) {
+      switch(cat) {
+        case '오인페': return 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+        case '스피커': return 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20';
+        case '헤드폰': return 'bg-purple-500/10 text-purple-400 border border-purple-500/20';
+        case '컨버터': return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+        default: return 'bg-gray-500/10 text-gray-400 border border-gray-500/20';
+      }
+    }
+
+    function getCategoryIcon(cat) {
+      switch(cat) {
+        case '오인페': return 'fa-circle-nodes';
+        case '스피커': return 'fa-volume-high';
+        case '헤드폰': return 'fa-headphones';
+        case '컨버터': return 'fa-diagram-project';
+        default: return 'fa-plug';
+      }
+    }
+
+    // ===== 통계 =====
+    function calculateStats() {
+      let totalGear = 0;
+      let totalValue = 0;
+      const brandCounts = {};
+
+      gearDatabase.forEach(member => {
+        member.gear.forEach(g => {
+          totalGear++;
+          totalValue += g.price;
+          brandCounts[g.brand] = (brandCounts[g.brand] || 0) + 1;
+        });
+      });
+
+      const sortedBrands = Object.entries(brandCounts).sort((a, b) => b[1] - a[1]);
+      const topBrandName = sortedBrands[0] ? sortedBrands[0][0] : '-';
+      const topBrandCount = sortedBrands[0] ? sortedBrands[0][1] : 0;
+
+      document.getElementById('stat-total-members').innerText = `${gearDatabase.length}명`;
+      document.getElementById('stat-total-gear').innerText = `${totalGear}개`;
+      document.getElementById('stat-top-brand').innerText = topBrandName;
+      document.getElementById('stat-top-brand-count').innerText = `총 ${topBrandCount}개 장비 등록됨`;
+      document.getElementById('stat-total-value').innerText = formatKRW(totalValue);
+    }
+
+    // ===== 필터/검색 =====
+    function initBrandFilters() {
+      const container = document.getElementById('brand-filters-container');
+      const promptSpan = container.firstElementChild;
+      container.innerHTML = '';
+      container.appendChild(promptSpan);
+
+      const counts = {};
+      gearDatabase.forEach(member => member.gear.forEach(g => counts[g.brand] = (counts[g.brand] || 0) + 1));
+      const topBrands = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 8).map(x => x[0]);
+
+      topBrands.forEach(brand => {
+        const btn = document.createElement('button');
+        btn.className = `px-3 py-1 rounded-full text-xs font-semibold border transition-all duration-200 ${
+          selectedBrandFilter === brand
+            ? 'bg-blue-600 text-white border-blue-500'
+            : 'bg-gray-800 text-gray-300 border-gray-700 hover:border-gray-500'
+        }`;
+        btn.innerHTML = `${brand} <span class="opacity-60 text-[10px] ml-1">${counts[brand]}</span>`;
+        btn.onclick = () => selectBrandFilter(brand);
+        container.appendChild(btn);
+      });
+    }
+
+    function selectBrandFilter(brand) {
+      selectedBrandFilter = (selectedBrandFilter === brand) ? null : brand;
+      initBrandFilters();
+      renderAll();
+    }
+
+    function handleSearch() {
+      searchQuery = document.getElementById('search-input').value.toLowerCase();
+      renderAll();
+    }
+
+    function resetFilters() {
+      document.getElementById('search-input').value = '';
+      searchQuery = '';
+      selectedBrandFilter = null;
+      initBrandFilters();
+      renderAll();
+    }
+
+    // ===== 렌더링(테이블/카드/카테고리/차트) =====
+    function renderTable() {
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
+      let shownCount = 0;
+
+      gearDatabase.forEach(member => {
+        const matchingGears = member.gear.filter(g => {
+          const matchesSearch =
+            member.name.toLowerCase().includes(searchQuery) ||
+            g.brand.toLowerCase().includes(searchQuery) ||
+            g.model.toLowerCase().includes(searchQuery) ||
+            g.category.includes(searchQuery);
+          const matchesBrand = !selectedBrandFilter || g.brand === selectedBrandFilter;
+          return matchesSearch && matchesBrand;
+        });
+
+        if (matchingGears.length === 0) return;
+        const rowspanValue = matchingGears.length;
+
+        matchingGears.forEach((g, index) => {
+          shownCount++;
+          const tr = document.createElement('tr');
+          const isLastOfMember = index === rowspanValue - 1;
+          tr.className = `hover:bg-blue-950/20 transition-colors ${isLastOfMember ? 'border-b border-gray-700' : 'border-b border-gray-800/30'}`;
+
+          let nameTdHtml = '';
+          if (index === 0) {
+            nameTdHtml = `
+              <td class="p-3 font-bold text-white whitespace-nowrap text-center align-middle border-r border-gray-800 bg-studio-950/40 relative" rowspan="${rowspanValue}">
+                <div class="flex flex-col items-center justify-center gap-1.5 py-2 px-1">
+                  <div class="w-7 h-7 rounded-full bg-blue-600/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+                    <i class="fa-regular fa-user text-[11px]"></i>
+                  </div>
+                  <span class="text-sm tracking-wide font-black text-white block">${member.name}</span>
+                </div>
+              </td>
+            `;
+          }
+
+          tr.innerHTML = `
+            ${nameTdHtml}
+            <td class="p-3 whitespace-nowrap">
+              <span class="text-[10px] px-2 py-0.5 rounded ${getCategoryBadge(g.category)} font-bold block text-center max-w-[80px]">${g.category}</span>
+            </td>
+            <td class="p-3 text-xs uppercase font-extrabold text-gray-400 whitespace-nowrap">${g.brand}</td>
+            <td class="p-3 text-sm text-gray-200 font-bold break-words whitespace-normal leading-relaxed">${g.model}</td>
+            <td class="p-3 text-right text-gray-400 font-mono font-medium whitespace-nowrap text-xs">${formatKRW(g.price)}</td>
+            <td class="p-3 text-center whitespace-nowrap">
+              <button onclick="openModal('${member.name}', '${g.category}', '${g.brand}', '${g.model}', '${g.price}', '${(g.desc || '').replaceAll("'", "\\\\'")}')" class="px-2.5 py-1 bg-blue-600/10 hover:bg-blue-600 border border-blue-500/20 hover:border-blue-500 text-blue-400 hover:text-white text-[11px] font-bold rounded-lg transition-all">
+                <i class="fa-solid fa-circle-info mr-1"></i>상세
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+
+      if (shownCount === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="p-12 text-center text-gray-500">
+              <i class="fa-solid fa-triangle-exclamation text-2xl mb-2.5 block text-gray-600"></i>
+              <span class="text-sm">검색 조건에 일치하는 장비 데이터가 없습니다.</span>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function renderMembers() {
+      const container = document.getElementById('view-member');
+      container.innerHTML = '';
+
+      gearDatabase.forEach(member => {
+        let matchesSearch = member.name.toLowerCase().includes(searchQuery);
+        let matchesBrand = !selectedBrandFilter;
+
+        member.gear.forEach(g => {
+          const match = g.brand.toLowerCase().includes(searchQuery) || g.model.toLowerCase().includes(searchQuery) || g.category.includes(searchQuery);
+          if (match) matchesSearch = true;
+          if (selectedBrandFilter && g.brand === selectedBrandFilter) matchesBrand = true;
+        });
+
+        if (!matchesSearch || !matchesBrand) return;
+
+        const totalCost = member.gear.reduce((acc, cur) => acc + cur.price, 0);
+        const card = document.createElement('div');
+        card.className = "bg-studio-900 rounded-2xl border border-gray-800 p-5 hover:border-blue-500/40 transition-all duration-300 relative group flex flex-col justify-between";
+
+        let gearHTML = '';
+        member.gear.forEach(g => {
+          const isBrandMatch = selectedBrandFilter && g.brand === selectedBrandFilter;
+          gearHTML += `
+            <div onclick="openModal('${member.name}', '${g.category}', '${g.brand}', '${g.model}', '${g.price}', '${(g.desc || '').replaceAll("'", "\\\\'")}')" class="p-3 bg-studio-950/80 rounded-xl border ${isBrandMatch ? 'border-blue-500 bg-blue-500/5' : 'border-gray-800 hover:border-gray-700'} cursor-pointer transition-colors flex justify-between items-start gap-3">
+              <div class="flex items-start gap-2.5 flex-1 min-w-0">
+                <div class="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center text-gray-400 shrink-0 mt-0.5">
+                  <i class="fa-solid ${getCategoryIcon(g.category)} text-xs"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="text-[10px] uppercase font-bold text-gray-500 block leading-tight">${g.brand}</span>
+                  <span class="text-xs font-bold text-gray-200 block break-words whitespace-normal">${g.model}</span>
+                </div>
+              </div>
+              <div class="text-right shrink-0">
+                <span class="text-xs font-semibold text-gray-400 block">${formatKRW(g.price)}</span>
+                <span class="text-[9px] ${getCategoryBadge(g.category)} px-1.5 py-0.5 rounded inline-block mt-1">${g.category}</span>
+              </div>
+            </div>
+          `;
+        });
+
+        card.innerHTML = `
+          <div>
+            <div class="flex justify-between items-start mb-4">
+              <div><h4 class="text-base font-black text-white"><i class="fa-regular fa-user text-gray-500 text-sm mr-1.5"></i>${member.name}</h4></div>
+              <div class="text-right">
+                <span class="text-[10px] text-gray-500 block font-mono">EST. ASSET</span>
+                <span class="text-sm font-bold text-emerald-400 font-mono">${formatKRW(totalCost)}</span>
+              </div>
+            </div>
+            <div class="space-y-2.5">${gearHTML}</div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderCategories() {
+      const lists = {
+        '오인페': { element: document.getElementById('list-interfaces'), count: 0 },
+        '스피커': { element: document.getElementById('list-speakers'), count: 0 },
+        '헤드폰': { element: document.getElementById('list-headphones'), count: 0 },
+        '컨버터': { element: document.getElementById('list-converters'), count: 0 }
+      };
+      Object.values(lists).forEach(o => o.element.innerHTML = '');
+
+      gearDatabase.forEach(member => {
+        member.gear.forEach(g => {
+          const matchesSearch = g.brand.toLowerCase().includes(searchQuery) || g.model.toLowerCase().includes(searchQuery) || member.name.toLowerCase().includes(searchQuery);
+          const matchesBrand = !selectedBrandFilter || g.brand === selectedBrandFilter;
+          if (!matchesSearch || !matchesBrand) return;
+
+          const listObj = lists[g.category];
+          if (!listObj) return;
+          listObj.count++;
+
+          const row = document.createElement('div');
+          row.className = "flex justify-between items-start gap-3 p-3 bg-studio-950/60 rounded-xl border border-gray-800 hover:border-gray-700 transition-all duration-200";
+          row.innerHTML = `
+            <div class="flex items-start gap-3 flex-1 min-w-0">
+              <div class="p-2 bg-studio-900 rounded-lg text-gray-400 shrink-0 mt-0.5">
+                <i class="fa-solid ${getCategoryIcon(g.category)} text-xs text-blue-400"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <span class="text-[9px] uppercase font-bold text-gray-500 block leading-tight">${g.brand}</span>
+                <span class="text-xs font-bold text-white block break-words whitespace-normal">${g.model}</span>
+                <span class="text-[10px] text-gray-400 block mt-0.5"><i class="fa-regular fa-user mr-1 text-[8px]"></i>유저: ${member.name}</span>
+              </div>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="text-xs font-semibold text-gray-400 block">${formatKRW(g.price)}</span>
+              <button onclick="openModal('${member.name}', '${g.category}', '${g.brand}', '${g.model}', '${g.price}', '${(g.desc || '').replaceAll("'", "\\\\'")}')" class="text-[9px] text-blue-400 hover:underline mt-1 inline-block font-sans">상세보기</button>
+            </div>
+          `;
+          listObj.element.appendChild(row);
+        });
+      });
+
+      document.getElementById('count-interface').innerText = `${lists['오인페'].count}개`;
+      document.getElementById('count-speakers').innerText = `${lists['스피커'].count}개`;
+      document.getElementById('count-headphones').innerText = `${lists['헤드폰'].count}개`;
+      document.getElementById('count-converters').innerText = `${lists['컨버터'].count}개`;
+    }
+
+    function renderCharts() {
+      if (chartInstances.interface) chartInstances.interface.destroy();
+      if (chartInstances.speaker) chartInstances.speaker.destroy();
+      if (chartInstances.headphone) chartInstances.headphone.destroy();
+
+      const counts = { '오인페': {}, '스피커': {}, '헤드폰': {} };
+      gearDatabase.forEach(m => m.gear.forEach(g => {
+        if (counts[g.category]) counts[g.category][g.brand] = (counts[g.category][g.brand] || 0) + 1;
+      }));
+
+      const prep = (obj) => {
+        const sorted = Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+        return { labels: sorted.map(x=>x[0]), data: sorted.map(x=>x[1]) };
+      };
+
+      const uiColors = ['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F43F5E','#6366F1'];
+
+      const config = (labelData) => ({
+        type: 'doughnut',
+        data: {
+          labels: labelData.labels,
+          datasets: [{ data: labelData.data, backgroundColor: uiColors.slice(0, labelData.labels.length), borderColor: '#111827', borderWidth: 2 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { color: '#9CA3AF', font: { size: 10, family: 'Inter' }, boxWidth: 10 } } }
+        }
+      });
+
+      chartInstances.interface = new Chart(document.getElementById('interfaceBrandChart').getContext('2d'), config(prep(counts['오인페'])));
+      chartInstances.speaker = new Chart(document.getElementById('speakerBrandChart').getContext('2d'), config(prep(counts['스피커'])));
+      chartInstances.headphone = new Chart(document.getElementById('headphoneBrandChart').getContext('2d'), config(prep(counts['헤드폰'])));
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      ['table','member','category','stats'].forEach(t => {
+        const btn = document.getElementById(`tab-${t}`);
+        const view = document.getElementById(`view-${t}`);
+        if (t === tab) {
+          btn.className = "px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 bg-blue-600 text-white shadow-lg shadow-blue-500/20 whitespace-nowrap";
+          view.classList.remove('hidden');
+          if (t === 'member') view.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6";
+        } else {
+          btn.className = "px-5 py-2.5 rounded-lg text-sm font-bold text-gray-400 hover:text-white transition-all duration-200 whitespace-nowrap";
+          view.classList.add('hidden');
+          if (t === 'member') view.className = "hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6";
+        }
+      });
+      if (tab === 'stats') setTimeout(renderCharts, 50);
+    }
+
+    function openModal(user, category, brand, model, price, desc) {
+      const modal = document.getElementById('info-modal');
+      const content = document.getElementById('modal-content');
+      content.innerHTML = `
+        <div class="flex items-start gap-3 mb-4">
+          <div class="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center text-blue-400 text-lg border border-gray-700 shrink-0">
+            <i class="fa-solid ${getCategoryIcon(category)}"></i>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-gray-500 block">${brand}</span>
+            <h4 class="text-base font-bold text-white break-words">${model}</h4>
+          </div>
+        </div>
+        <div class="space-y-4 text-sm font-sans">
+          <div class="bg-studio-950 p-3 rounded-xl border border-gray-800 flex justify-between">
+            <span class="text-gray-400 font-semibold">사용자</span>
+            <span class="text-white font-bold"><i class="fa-regular fa-user mr-1 text-xs"></i>${user}</span>
+          </div>
+          <div class="bg-studio-950 p-3 rounded-xl border border-gray-800 flex justify-between">
+            <span class="text-gray-400 font-semibold">장비 카테고리</span>
+            <span class="px-2 py-0.5 rounded text-xs ${getCategoryBadge(category)}">${category}</span>
+          </div>
+          <div class="bg-studio-950 p-3 rounded-xl border border-gray-800 flex justify-between">
+            <span class="text-gray-400 font-semibold">시세 적용</span>
+            <span class="text-emerald-400 font-black">${formatKRW(parseInt(price,10))}</span>
+          </div>
+          <div class="p-3 bg-blue-500/5 rounded-xl border border-blue-500/20">
+            <span class="text-xs text-blue-400 font-bold block mb-1">장비 설명</span>
+            <p class="text-xs text-gray-300 leading-relaxed">${desc || '-'}</p>
+          </div>
+        </div>
+      `;
+      modal.classList.remove('hidden');
+    }
+    function closeModal(){ document.getElementById('info-modal').classList.add('hidden'); }
+
+    // 복사 기능
+    function openTableCopyModal(){ copyScope='all'; document.getElementById('copy-modal').classList.remove('hidden'); updateCopyPreview(); }
+    function closeCopyModal(){ document.getElementById('copy-modal').classList.add('hidden'); document.getElementById('copy-toast').classList.add('hidden'); }
+    function updateCopyPreview(){
+      const optName = document.getElementById('copy-opt-name').checked;
+      const optGear = document.getElementById('copy-opt-gear').checked;
+      const optPrice = document.getElementById('copy-opt-price').checked;
+      document.getElementById('copy-preview').innerText = generateAllCopyText(optName,optGear,optPrice) || "(복사할 항목을 하나 이상 선택해 주세요)";
+    }
+    function generateAllCopyText(optName,optGear,optPrice){
+      let blocks=[];
+      gearDatabase.forEach(member=>{
+        const matchingGears = member.gear.filter(g=>{
+          const matchesSearch =
+            member.name.toLowerCase().includes(searchQuery) ||
+            g.brand.toLowerCase().includes(searchQuery) ||
+            g.model.toLowerCase().includes(searchQuery) ||
+            g.category.includes(searchQuery);
+          const matchesBrand = !selectedBrandFilter || g.brand===selectedBrandFilter;
+          return matchesSearch && matchesBrand;
+        });
+        if(matchingGears.length===0) return;
+
+        let lines=[];
+        if(optName) lines.push(`[${member.name}]`);
+        matchingGears.forEach(g=>{
+          let gearLine="- ";
+          if(optGear){
+            gearLine += `${g.category}: ${g.brand} ${g.model}`;
+            if(optPrice) gearLine += ` (${formatKRW(g.price)})`;
+          } else if(optPrice){
+            gearLine += `${g.category} 가격: ${formatKRW(g.price)}`;
+          }
+          if(optGear || optPrice) lines.push(gearLine);
+        });
+        if(lines.length>0) blocks.push(lines.join("\n"));
+      });
+      return blocks.join("\n-------------------------------------------------\n");
+    }
+    function executeCopy(){
+      const text = document.getElementById('copy-preview').innerText;
+      if(!text || text.startsWith("(")){ showToastMessage("복사할 데이터가 없습니다."); return; }
+      const ta=document.createElement("textarea");
+      ta.value=text; ta.style.position="fixed"; document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      try{
+        document.execCommand('copy');
+        document.getElementById('copy-toast').classList.remove('hidden');
+        showToastMessage("클립보드에 복사했습니다.");
+      }catch(e){ console.error(e); }
+      document.body.removeChild(ta);
+    }
+
+    function renderAll(){ renderTable(); renderMembers(); renderCategories(); }
+
+    window.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){ closeModal(); closeCopyModal(); } });
+
+    window.onload = function(){
+      calculateStats();
+      initBrandFilters();
+      renderAll();
+
+      const isMobile = window.matchMedia("(max-width: 768px)").matches;
+      switchTab(isMobile ? 'member' : 'table');
+    };
+  </script>
+</body>
+</html>
